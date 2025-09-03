@@ -3,6 +3,8 @@ package br.com.washryan.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import br.com.washryan.dao.jdbc.ConnectionFactory;
 import br.com.washryan.domain.Cliente;
@@ -85,4 +87,60 @@ public class ClienteDAO implements IClienteDAO {
 		}
 	}
 
+	@Override
+	public List<Cliente> buscarTodos() throws Exception {
+		Connection connection = null;
+		PreparedStatement stm = null;
+		ResultSet rs = null;
+		List<Cliente> clientes = new ArrayList<>();
+		try {
+			connection = ConnectionFactory.getConnection();
+			String sql = "SELECT * FROM TB_CLIENTE_2 ORDER BY NOME";
+			stm = connection.prepareStatement(sql);
+			rs = stm.executeQuery();
+			while (rs.next()) {
+				Cliente cliente = new Cliente();
+				cliente.setId(rs.getLong("id"));
+				cliente.setCodigo(rs.getString("codigo"));
+				cliente.setNome(rs.getString("nome"));
+				clientes.add(cliente);
+			}
+			return clientes;
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			if (rs != null && !rs.isClosed()) {
+				rs.close();
+			}
+			if (stm != null && !stm.isClosed()) {
+				stm.close();
+			}
+			if (connection != null && !connection.isClosed()) {
+				connection.close();
+			}
+		}
+	}
+
+	@Override
+	public Integer atualizar(Cliente cliente) throws Exception {
+		Connection connection = null;
+		PreparedStatement stm = null;
+		try {
+			connection = ConnectionFactory.getConnection();
+			String sql = "UPDATE TB_CLIENTE_2 SET NOME = ? WHERE CODIGO = ?";
+			stm = connection.prepareStatement(sql);
+			stm.setString(1, cliente.getNome());
+			stm.setString(2, cliente.getCodigo());
+			return stm.executeUpdate();
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			if (stm != null && !stm.isClosed()) {
+				stm.close();
+			}
+			if (connection != null && !connection.isClosed()) {
+				connection.close();
+			}
+		}
+	}
 }
